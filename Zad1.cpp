@@ -21,7 +21,7 @@ public:
      */
     Wielomian(const vector<double>& wspolczynniki) : wsp(wspolczynniki) {
         if (wsp.empty())
-            throw invalid_argument("Wielomian nie może być pusty.");
+            throw invalid_argument("Wielomian nie moze byc pusty.");
 
         while (wsp.size() > 1 && abs(wsp.back()) < 1e-12)
             wsp.pop_back();
@@ -38,7 +38,7 @@ public:
      * Zwraca tekstową reprezentację wielomianu w formie np. "W(x) = 3x^2 + 2x + 1".
      */
     string toString() const {
-        ostringstream oss;
+        ostringstream oss;  // dodane przez chatGPT
         oss << "W(x) = ";
         bool pierwsze = true;
 
@@ -130,15 +130,15 @@ int main() {
         cout << w2.toString() << endl;
 
         cout << "Suma:      " << (w1 + w2).toString() << endl;
-        cout << "Różnica:   " << (w1 - w2).toString() << endl;
+        cout << "Roznica:   " << (w1 - w2).toString() << endl;
         cout << "Iloczyn:   " << (w1 * w2).toString() << endl;
-        cout << "Wartość w1(2) = " << w1(2.0) << endl;
+        cout << "Wartosc w1(2) = " << w1(2.0) << endl;
 
         w1 += w2;
         cout << "w1 += w2:  " << w1.toString() << endl;
     }
     catch (const exception& e) {
-        cerr << "Błąd: " << e.what() << endl;
+        cerr << "Blad: " << e.what() << endl;
     }
 
     return 0;
