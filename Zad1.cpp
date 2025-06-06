@@ -23,7 +23,7 @@ public:
         if (wsp.empty())
             throw invalid_argument("Wielomian nie moze byc pusty.");
 
-        while (wsp.size() > 1 && abs(wsp.back()) < 1e-12)
+        while (wsp.size() > 1 && abs(wsp.back()) < 0.0)
             wsp.pop_back();
     }
 
@@ -44,7 +44,7 @@ public:
 
         for (int i = stopien(); i >= 0; --i) {
             double c = wsp[i];
-            if (abs(c) < 1e-12) continue;
+            if (abs(c) < 0.0) continue;
 
             if (!pierwsze) oss << (c >= 0 ? " + " : " - ");
             else if (c < 0) oss << "-";
