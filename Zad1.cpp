@@ -59,11 +59,11 @@ public:
     }
 
     /**
-     * Operator nawiasów okrągłych — zwraca wartość wielomianu dla danego x (ewaluacja).
+     * Zwraca wartość wielomianu dla danego x.
      */
     double operator()(double x) const {
         double wynik = 0;
-        for (int i = wsp.size() - 1; i >= 0; --i)
+        for (int i = wsp.size() - 1; i >= 0; --i)     // Algorytm Hornera (ChatGPT)
             wynik = wynik * x + wsp[i];
         return wynik;
     }
