@@ -1,7 +1,7 @@
 ﻿#include <iostream>
 #include <string>
 #include <stdexcept>
-#include <algorithm>
+#include <unordered_map>
 
 using namespace std;
 
@@ -14,9 +14,9 @@ class ProteinSequence;
 /** Klasa reprezentująca sekwencję DNA */
 class DNASequence {
 private:
-    string identifier;     ///< Identyfikator sekwencji
-    string data;           ///< Sekwencja zasad DNA
-    static const string VALID_CHARS; ///< Dozwolone znaki zasad
+    string identifier;
+    string data;
+    static const string VALID_CHARS;
 
 public:
     /**
@@ -26,7 +26,7 @@ public:
      */
     DNASequence(string id, string seq) : identifier(id), data(seq) {
         for (char c : data) {
-            if (VALID_CHARS.find(c) == string::npos) // npos - stała reprezentująca brak pozycji (ang. no position)
+            if (VALID_CHARS.find(c) == string::npos)
                 throw invalid_argument("Nieprawidłowy znak w sekwencji DNA.");
         }
     }
@@ -38,11 +38,6 @@ public:
     int length() const {
         return data.length();
     }
-
-    /**
-     * Zwraca reprezentację FASTA.
-     * @return Sekwencja w formacie FASTA
-     */
     string toString() const {
         return ">" + identifier + "\n" + data;
     }
@@ -99,9 +94,9 @@ const string DNASequence::VALID_CHARS = "ATCG";
 /** Klasa reprezentująca sekwencję RNA */
 class RNASequence {
 private:
-    string identifier;     ///< Identyfikator sekwencji
-    string data;           ///< Sekwencja zasad RNA
-    static const string VALID_CHARS; ///< Dozwolone znaki zasad
+    string identifier;
+    string data;
+    static const string VALID_CHARS;
 
 public:
     /**
@@ -131,8 +126,8 @@ public:
     }
 
     /**
-     * Mutuje zasadę RNA.
-     */
+    * Mutuje zasadę RNA.
+    */
     void mutate(int position, char value) {
         if (position < 0 || position >= data.length())
             throw out_of_range("Pozycja poza zakresem.");
@@ -165,9 +160,6 @@ public:
         return result;
     }
 
-    /**
-     * Transluje RNA na uproszczoną sekwencję białkową.
-     */
     ProteinSequence transcribe() const;
 };
 
@@ -176,14 +168,11 @@ const string RNASequence::VALID_CHARS = "AUCG";
 /** Klasa reprezentująca sekwencję białkową */
 class ProteinSequence {
 private:
-    string identifier;     ///< Identyfikator białka
-    string data;           ///< Sekwencja aminokwasów
-    static const string VALID_CHARS; ///< Dozwolone aminokwasy
+    string identifier;
+    string data;
+    static const string VALID_CHARS;
 
 public:
-    /**
-     * Konstruktor białka.
-     */
     ProteinSequence(string id, string seq) : identifier(id), data(seq) {
         for (char c : data) {
             if (VALID_CHARS.find(c) == string::npos)
@@ -194,9 +183,7 @@ public:
     /**
      * Zwraca długość białka.
      */
-    int length() const {
-        return data.length();
-    }
+    int length() const { return data.length(); }
 
     /**
      * Format FASTA.
@@ -216,18 +203,15 @@ public:
         data[position] = value;
     }
 
-    /**
-     * Znajduje motyw aminokwasowy.
-     */
     int findMotif(const string& motif) const {
         size_t pos = data.find(motif);
         return pos != string::npos ? static_cast<int>(pos) : -1;
     }
 };
 
-const string ProteinSequence::VALID_CHARS = "ACDEFGHIKLMNPQRSTVWY"; // 20 standardowych aminokwasów
+const string ProteinSequence::VALID_CHARS = "ACDEFGHIKLMNPQRSTVWY";
 
-// Transkrypcja nici matrycowej DNA → RNA
+// Transkrypcja DNA na RNA
 RNASequence DNASequence::transcribe() const {
     string rna;
     for (char c : data) {
@@ -241,19 +225,46 @@ RNASequence DNASequence::transcribe() const {
     return RNASequence(identifier + "_RNA", rna);
 }
 
-// Uproszczona translacja: każde 3 nukleotydy → 'X'
+// Translacja RNA na białko
 ProteinSequence RNASequence::transcribe() const {
+    static const unordered_map<string, char> codonTable = {  // mapa zaproponowana przez ChatGPT
+        {"UUU", 'F'}, {"UUC", 'F'}, {"UUA", 'L'}, {"UUG", 'L'},
+        {"CUU", 'L'}, {"CUC", 'L'}, {"CUA", 'L'}, {"CUG", 'L'},
+        {"AUU", 'I'}, {"AUC", 'I'}, {"AUA", 'I'}, {"AUG", 'M'},
+        {"GUU", 'V'}, {"GUC", 'V'}, {"GUA", 'V'}, {"GUG", 'V'},
+        {"UCU", 'S'}, {"UCC", 'S'}, {"UCA", 'S'}, {"UCG", 'S'},
+        {"CCU", 'P'}, {"CCC", 'P'}, {"CCA", 'P'}, {"CCG", 'P'},
+        {"ACU", 'T'}, {"ACC", 'T'}, {"ACA", 'T'}, {"ACG", 'T'},
+        {"GCU", 'A'}, {"GCC", 'A'}, {"GCA", 'A'}, {"GCG", 'A'},
+        {"UAU", 'Y'}, {"UAC", 'Y'}, {"UAA", '*'}, {"UAG", '*'},
+        {"CAU", 'H'}, {"CAC", 'H'}, {"CAA", 'Q'}, {"CAG", 'Q'},
+        {"AAU", 'N'}, {"AAC", 'N'}, {"AAA", 'K'}, {"AAG", 'K'},
+        {"GAU", 'D'}, {"GAC", 'D'}, {"GAA", 'E'}, {"GAG", 'E'},
+        {"UGU", 'C'}, {"UGC", 'C'}, {"UGA", '*'}, {"UGG", 'W'},
+        {"CGU", 'R'}, {"CGC", 'R'}, {"CGA", 'R'}, {"CGG", 'R'},
+        {"AGU", 'S'}, {"AGC", 'S'}, {"AGA", 'R'}, {"AGG", 'R'},
+        {"GGU", 'G'}, {"GGC", 'G'}, {"GGA", 'G'}, {"GGG", 'G'}
+    };
+
     string protein;
     for (size_t i = 0; i + 2 < data.length(); i += 3) {
-        protein += 'X'; // uproszczenie — normalnie kodon → aminokwas
+        string codon = data.substr(i, 3);
+        auto it = codonTable.find(codon);
+        if (it != codonTable.end()) {
+            if (it->second == '*') break;
+            protein += it->second;
+        }
+        else {
+            protein += 'X'; // Nieznany kodon
+        }
     }
     return ProteinSequence(identifier + "_protein", protein);
 }
 
-/** Funkcja główna — demonstruje użycie klas */
+// Testy
 int main() {
     try {
-        DNASequence dna("seq1", "TACGGA");
+        DNASequence dna("seq1", "TACGGCATTGAA");
         cout << dna.toString() << endl;
         cout << "Komplementarna nić: " << dna.complement() << endl;
 
@@ -266,7 +277,7 @@ int main() {
         dna.mutate(0, 'A');
         cout << "Po mutacji DNA: " << dna.toString() << endl;
 
-        cout << "Motyw 'CGG' w DNA na pozycji: " << dna.findMotif("CGG") << endl;
+        cout << "Motyw 'GGC' w DNA na pozycji: " << dna.findMotif("GGC") << endl;
 
     }
     catch (const exception& e) {
